@@ -4,7 +4,6 @@ require 'rmagick'
 require 'player'
 require 'collision_observer'
 
-
 class GameWindow < Gosu::Window
   
   TITLE = 'Nerd Fighter'
@@ -31,11 +30,15 @@ class GameWindow < Gosu::Window
     # game_objects.collect(&:update)
     @player1.move
     @player2.move
+    collision_watcher.deal_damage(@player1, @player2)
   end
 
   def draw
     draw_centered(@title, 20, 0)
     draw_centered(@collision_notice, 100, 0) if collision_watcher.found_collision?(@player1, @player2)
+    
+    Gosu::Image.from_text(self, @player1.health, TITLE_FONT, 32).draw(100,100,1)
+    Gosu::Image.from_text(self, @player2.health, TITLE_FONT, 32).draw(640 - 100,100,1)
     
     # game_objects.collect(&:draw)
     @player1.draw

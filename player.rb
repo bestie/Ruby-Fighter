@@ -1,6 +1,6 @@
 class Player
   
-  attr_accessor :x, :y, :z
+  attr_reader :x, :y, :z, :health
   
   def initialize(window, player_id)
     @window = window
@@ -33,36 +33,35 @@ class Player
     @y = window.ground
     @z = 1
     
-    @animating = 0
+    @health = 100
   end
   
   def draw
-    sprite.draw(@x, @y, @z)
+    sprite.draw(x, y, z)
   end
   
   def move
-    
-    # needs some sort of current animation method
-    if @animating > 0
-      @animating -= 1
-      
-      @throwing_punch = false if @animating == 0 # animation finished
-      
-      return @animating
+    if animating?
+      continue_animation
+    else
+      crouch or
+      move_left or
+      move_right or
+      punch
     end
-    
-    crouch or
-    move_left or
-    move_right or
-    punch
+  end
+  
+  def x
+    x_offset = animating? ? current_animation.x_offset : 0
+    @x + x_offset
   end
   
   def min_x
-    @x
+    x
   end
   
   def max_x
-    @x + sprite.width
+    x + sprite.width
   end
   
   def width
@@ -73,7 +72,29 @@ class Player
     sprite.height
   end
   
-  private
+  def punching?
+    current_animation.is_a?(Punch)
+  end
+  
+  def attacking?
+    current_animation.is_a?(Attack)
+  end
+  
+  def attack
+    current_animation
+  end
+  
+  def inflict_damage(attack)
+    if @last_attack === attack
+      # don't take damage from same attack twice
+      return false
+    else
+      @health -= attack.damage
+      @last_attack = attack
+    end
+  end
+  
+  private ####################################################################
   
   def player1?
     @player_id == 1
@@ -99,15 +120,31 @@ class Player
   
   def sprite
     return @crouching if @crouched
-    return @punching if @throwing_punch
+    return @punching if punching?
     @standing
   end
   
   def punch
-    if punch_button?
-      @throwing_punch = true 
-      @animating = 20
-    end
+    return unless punch_button?
+    options = player1? ? { } : { x_offset: -22 }
+    start_animation Punch.new(options)
+  end
+  
+  def current_animation
+    @current_animation
+  end
+  
+  def start_animation(animation)
+    @current_animation ||= animation
+  end
+  
+  def animating?
+    !!@current_animation
+  end
+  
+  def continue_animation
+    @current_animation.tick
+    @current_animation = nil if @current_animation.finished?
   end
   
   def left_button?
@@ -130,4 +167,32 @@ class Player
     @window.button_down?(key)
   end
 end
-    
+
+class Attack; end
+
+class Punch < Attack
+  
+  ANIMATION_TIME = 20
+  DAMAGE = 10
+  
+  def initialize(options = {})
+    @options = options
+    @animation_time = ANIMATION_TIME
+  end
+  
+  def x_offset
+    @options[:x_offset].to_i
+  end
+  
+  def tick
+    @animation_time -= 1
+  end
+  
+  def finished?
+    @animation_time == 0
+  end
+  
+  def damage
+    DAMAGE
+  end
+end
