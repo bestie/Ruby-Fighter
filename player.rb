@@ -29,7 +29,7 @@ class Player
     @crouching = Gosu::Image.new(@window, rimage, false, *crouching_segment)
     @punching = Gosu::Image.new(@window, rimage, false, *punching_segment)
     
-    @x = @player_id == 1 ? 100 : 540
+    @x = @player_id == 1 ? 200 : 440
     @y = window.ground
     @z = 1
     
@@ -80,6 +80,16 @@ class Player
     current_animation.is_a?(Attack)
   end
   
+  def moving?
+    current_animation.is_a?(Walk)
+  end
+  
+  def push_back(x)
+    # trying to walk but something is pushing back
+    # only works for left facing player
+    @x = x - width
+  end
+  
   def attack
     current_animation
   end
@@ -111,11 +121,15 @@ class Player
   end
   
   def move_left
-    @x -= 1 if left_button?
+    return unless left_button?
+    start_animation(Walk.new)
+    @x -= 1
   end
   
   def move_right
-    @x += 1 if right_button?
+    return unless right_button?
+    start_animation(Walk.new)
+    @x += 1
   end
   
   def sprite
@@ -168,16 +182,18 @@ class Player
   end
 end
 
-class Attack; end
-
-class Punch < Attack
+class Animation
+  def self.animation_time(time = nil)
+    @animation_time ||= time
+  end
   
-  ANIMATION_TIME = 20
-  DAMAGE = 10
+  def self.damage(hit_points = nil)
+    @damage ||= hit_points
+  end
   
   def initialize(options = {})
+    @animation_time = self.class.animation_time
     @options = options
-    @animation_time = ANIMATION_TIME
   end
   
   def x_offset
@@ -193,6 +209,16 @@ class Punch < Attack
   end
   
   def damage
-    DAMAGE
+    self.class.damage
   end
+end
+
+class Walk < Animation
+  animation_time 2
+end
+
+class Attack < Animation; end
+class Punch < Attack
+  animation_time 20
+  damage 10
 end
