@@ -87,7 +87,8 @@ class Player
   def push_back(x)
     # trying to walk but something is pushing back
     # only works for left facing player
-    @x = x - width
+    @x = x
+    @x -= width if player1?
   end
   
   def attack
@@ -162,22 +163,22 @@ class Player
   end
   
   def left_button?
-    key = player1? ? Gosu::KbLeft : Gosu::KbA
+    key = player1? ? Gosu::KbA : Gosu::KbLeft
     @window.button_down?(key)
   end
   
   def right_button?
-    key = player1? ? Gosu::KbRight : Gosu::KbD
+    key = player1? ? Gosu::KbD : Gosu::KbRight
     @window.button_down?(key)
   end
   
   def down_button?
-    key = player1? ? Gosu::KbDown : Gosu::KbS
+    key = player1? ? Gosu::KbS : Gosu::KbDown
     @window.button_down?(key)
   end
   
   def punch_button?
-    key = player1? ? Gosu::KbM : Gosu::KbF
+    key = player1? ? Gosu::KbF : Gosu::KbM
     @window.button_down?(key)
   end
 end
@@ -214,7 +215,7 @@ class Animation
 end
 
 class Walk < Animation
-  animation_time 2
+  animation_time 1
 end
 
 class Attack < Animation; end
