@@ -6,7 +6,7 @@ require 'collision_observer'
 
 class GameWindow < Gosu::Window
   
-  TITLE = 'Nerd Fighter'
+  TITLE = 'Ruby Fighter'
   TITLE_FONT = 'Comic Sans MS'
   
   def initialize
