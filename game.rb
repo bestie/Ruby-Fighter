@@ -1,4 +1,5 @@
-require 'rubygems'
+$LOAD_PATH.unshift(File.dirname(__FILE__))
+
 require 'gosu'
 require 'rmagick'
 require 'player'
